@@ -108,7 +108,7 @@ class Graph {
     this.bfs(end);
 
     // Show the route from the start
-    this.outputRoute(start);
+    return this.outputRoute(start);
   }
 
   addEdge(v1, v2) {
@@ -184,8 +184,7 @@ if (process.env.NODE_ENV !== 'test') {
   }
 
   // Show the route from one host to another
-
-  graph.route(hostAVert, hostBVert);
+  console.log(graph.route(hostAVert, hostBVert));
 }
 
 module.exports = { Graph, Vertex };
