@@ -4,9 +4,13 @@
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable class-methods-use-this */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
+require('dotenv').config();
+
 const containsValue = value => (acc, curr) => (curr.value === value ? curr : acc);
+
 /**
  * Edge class
  */
@@ -24,6 +28,8 @@ class Vertex {
   constructor(value = 'vertex') {
     this.value = value;
     this.edges = [];
+    this.parent = null;
+    this.isVisited = false;
   }
 }
 
@@ -50,7 +56,7 @@ class Graph {
    * @return null if not found.
    */
   findVertex(value) {
-    return this.vertexes.reduce(containsValue(value), null);
+    return this.vertexes.reduce(containsValue(value), null); // if vertexes contains value, return that vertex, otherwise, return null
   }
 
   /**
@@ -60,18 +66,38 @@ class Graph {
    * @param {Vertex} start The starting vertex for the BFS
    */
   bfs(start) {
-    // !!! IMPLEMENT ME
+    const queue = [start];
+
+    while (this._isNotEmpty(queue)) {
+      const currVert = queue.shift();
+
+      if (!currVert.isVisited) {
+        currVert.isVisited = true;
+      }
+
+      currVert.edges.forEach((edge) => {
+        if (!edge.isVisited) {
+          edge.isVisited = true;
+          edge.parent = currVert;
+          queue.push(edge);
+        }
+      });
+    }
   }
 
   /**
    * Print out the route from the start vert back along the parent
    * pointers (set in the previous BFS)
    *
-   * @param {Vertex} start The starting vertex to follow parent
+   * @param {Vertex} vert The starting vertex to follow parent
    *                       pointers from
    */
-  outputRoute(start) {
-    // !!! IMPLEMENT ME
+  outputRoute(vert, route = []) {
+    route.push(vert.value);
+
+    if (vert.parent === null) return route.join(' --> ');
+
+    return this.outputRoute(vert.parent, route);
   }
 
   /**
@@ -89,70 +115,77 @@ class Graph {
     v1.edges.push(v2);
     v2.edges.push(v1);
   }
+
+  _isNotEmpty(arr) {
+    return arr.length !== 0;
+  }
 }
 
-// /**
-//  * Main
-//  */
-//
-// // Test for valid command line
-// const args = process.argv.slice(2);
-//
-// if (args.length !== 2) {
-//   console.error('usage: routing hostA hostB');
-//   process.exit(1);
-// }
-//
-// // Build the entire Internet
-// // (it's only a model)
-// const graph = new Graph();
-// const vertA = new Vertex('HostA');
-// const vertB = new Vertex('HostB');
-// const vertC = new Vertex('HostC');
-// const vertD = new Vertex('HostD');
-// const vertE = new Vertex('HostE');
-// const vertF = new Vertex('HostF');
-// const vertG = new Vertex('HostG');
-// const vertH = new Vertex('HostH');
-//
-// graph.addEdge(vertA, vertB);
-// graph.addEdge(vertB, vertD);
-// graph.addEdge(vertA, vertC);
-// graph.addEdge(vertC, vertD);
-// graph.addEdge(vertC, vertF);
-// graph.addEdge(vertG, vertF);
-// graph.addEdge(vertE, vertF);
-// graph.addEdge(vertH, vertF);
-// graph.addEdge(vertH, vertE);
-//
-// graph.vertexes.push(vertA);
-// graph.vertexes.push(vertB);
-// graph.vertexes.push(vertC);
-// graph.vertexes.push(vertD);
-// graph.vertexes.push(vertE);
-// graph.vertexes.push(vertF);
-// graph.vertexes.push(vertG);
-// graph.vertexes.push(vertH);
-//
-// // Look up the hosts passed on the command line by name to see if we can
-// // find them.
-//
-// const hostAVert = graph.findVertex(args[0]);
-//
-// if (hostAVert === null) {
-//   console.error(`routing: could not find host: ${args[0]}`);
-//   process.exit(2);
-// }
-//
-// const hostBVert = graph.findVertex(args[1]);
-//
-// if (hostBVert === null) {
-//   console.error(`routing: could not find host: ${args[1]}`);
-//   process.exit(2);
-// }
-//
-// // Show the route from one host to another
-//
-// graph.route(hostAVert, hostBVert);
-//
+/**
+ * Main
+ */
+
+// Test for valid command line
+
+if (process.env.NODE_ENV !== 'test') {
+  const args = process.argv.slice(2);
+
+  if (args.length !== 2) {
+    console.error('usage: routing hostA hostB');
+    process.exit(1);
+  }
+
+  // Build the entire Internet
+  // (it's only a model)
+  const graph = new Graph();
+  const vertA = new Vertex('HostA');
+  const vertB = new Vertex('HostB');
+  const vertC = new Vertex('HostC');
+  const vertD = new Vertex('HostD');
+  const vertE = new Vertex('HostE');
+  const vertF = new Vertex('HostF');
+  const vertG = new Vertex('HostG');
+  const vertH = new Vertex('HostH');
+
+  graph.addEdge(vertA, vertB);
+  graph.addEdge(vertB, vertD);
+  graph.addEdge(vertA, vertC);
+  graph.addEdge(vertC, vertD);
+  graph.addEdge(vertC, vertF);
+  graph.addEdge(vertG, vertF);
+  graph.addEdge(vertE, vertF);
+  graph.addEdge(vertH, vertF);
+  graph.addEdge(vertH, vertE);
+
+  graph.vertexes.push(vertA);
+  graph.vertexes.push(vertB);
+  graph.vertexes.push(vertC);
+  graph.vertexes.push(vertD);
+  graph.vertexes.push(vertE);
+  graph.vertexes.push(vertF);
+  graph.vertexes.push(vertG);
+  graph.vertexes.push(vertH);
+
+  // Look up the hosts passed on the command line by name to see if we can
+  // find them.
+
+  const hostAVert = graph.findVertex(args[0]);
+
+  if (hostAVert === null) {
+    console.error(`routing: could not find host: ${args[0]}`);
+    process.exit(2);
+  }
+
+  const hostBVert = graph.findVertex(args[1]);
+
+  if (hostBVert === null) {
+    console.error(`routing: could not find host: ${args[1]}`);
+    process.exit(2);
+  }
+
+  // Show the route from one host to another
+
+  graph.route(hostAVert, hostBVert);
+}
+
 module.exports = { Graph, Vertex };
