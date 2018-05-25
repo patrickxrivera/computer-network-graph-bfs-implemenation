@@ -1,11 +1,11 @@
 {
   "name": "computer-network-graph-bfs-implemenation",
   "version": "1.0.0",
-  "description": "For a computer network, it's useful to know how to get a packet from one host to another across the Internet.",
+  "description":
+    "For a computer network, it's useful to know how to get a packet from one host to another across the Internet.",
   "main": "index.js",
   "scripts": {
-    "test": "eslint tests/*.js && eslint src/*.js && jest --verbose",
-    "lint": "eslint",
+    "test": "tests/*.js && src/*.js && jest --verbose",
     "test:watch": "npm test -- --watch"
   },
   "repository": {
